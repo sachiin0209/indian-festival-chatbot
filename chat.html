@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Festival Chatbot</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --bot-bg: #e3f2fd;
+            --user-bg: #f0f0f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            margin: 5px 0;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            align-items: flex-end;
+        }
+
+        .user-message .message-content {
+            background-color: var(--user-bg);
+            border: 1px solid #ddd;
+        }
+
+        .bot-message {
+            align-items: flex-start;
+        }
+
+        .bot-message .message-content {
+            background-color: var(--bot-bg);
+            border: 1px solid #e0e0e0;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .input-container {
+            padding: 20px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .input-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #message-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        #send-button {
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        #send-button:hover {
+            background-color: #357abd;
+        }
+
+        #send-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background-color: var(--bot-bg);
+            border-radius: 15px;
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        /* Emoji and icon styles */
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 15px 0;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .message-content {
+                max-width: 90%;
+            }
+
+            .chat-container {
+                height: 80vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Indian Festival Chatbot</h1>
+            <p>Ask me about Indian festivals and traditional attire!</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be added here dynamically -->
+            </div>
+
+            <div class="typing-indicator" id="typing-indicator">
+                Bot is typing...
+            </div>
+
+            <div class="input-container">
+                <form class="input-form" id="chat-form">
+                    <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off">
+                    <button type="submit" id="send-button">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageInput = document.getElementById('message-input');
+            const chatForm = document.getElementById('chat-form');
+            const sendButton = document.getElementById('send-button');
+            const typingIndicator = document.getElementById('typing-indicator');
+            
+            let ws = null;
+            let isConnected = false;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+
+            function connectWebSocket() {
+                // Get the WebSocket URL from the template context
+                const wsUrl = "{{ ws_url }}".replace('http://', 'ws://').replace('https://', 'wss://');
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsEndpoint = `${protocol}//${wsUrl}/ws/chat`;
+                
+                ws = new WebSocket(wsEndpoint);
+
+                ws.onopen = function() {
+                    isConnected = true;
+                    reconnectAttempts = 0;
+                    console.log('WebSocket connected');
+                    sendButton.disabled = false;
+                    // Add welcome message
+                    addBotMessage(`Welcome to the Indian Festival Chatbot! 🤖\n\nI can tell you about:\n• Indian festivals\n• Traditional attire\n• How to wear traditional clothes\n\nType 'help' to see all available commands.`);
+                };
+
+                ws.onclose = function() {
+                    isConnected = false;
+                    sendButton.disabled = true;
+                    console.log('WebSocket disconnected');
+                    
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
+                        setTimeout(connectWebSocket, 3000);
+                    } else {
+                        addBotMessage("⚠️ Connection lost. Please make sure the chatbot server is running by executing 'uvicorn app:app --reload', then refresh this page.");
+                    }
+                };
+
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    addBotMessage("Connection error. Please try refreshing the page.");
+                };
+
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        typingIndicator.classList.remove('active');
+                        
+                        if (data.error) {
+                            addBotMessage(data.error);
+                        } else {
+                            addBotMessage(data.response);
+                        }
+                    } catch (error) {
+                        console.error('Error processing message:', error);
+                        addBotMessage("Error processing response. Please try again.");
+                    }
+                };
+            }
+
+            function addMessage(content, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.innerHTML = content.replace(/\n/g, '<br>');
+
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = new Date().toLocaleTimeString();
+
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(timeDiv);
+                chatMessages.appendChild(messageDiv);
+
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function addUserMessage(content) {
+                addMessage(content, true);
+            }
+
+            function addBotMessage(content) {
+                addMessage(content, false);
+            }
+
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const message = messageInput.value.trim();
+                if (!message) return;
+
+                if (!isConnected) {
+                    addBotMessage("Not connected to server. Please wait or refresh the page.");
+                    return;
+                }
+
+                // Add user message to chat
+                addUserMessage(message);
+                
+                // Clear input
+                messageInput.value = '';
+                sendButton.disabled = true;
+                
+                // Show typing indicator
+                typingIndicator.classList.add('active');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                try {
+                    // Send message through WebSocket
+                    ws.send(message);
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    addBotMessage("Error sending message. Please try again.");
+                    typingIndicator.classList.remove('active');
+                }
+            });
+
+            // Handle input validation
+            messageInput.addEventListener('input', function() {
+                sendButton.disabled = !this.value.trim() || !isConnected;
+            });
+
+            // Connect to WebSocket when page loads
+            connectWebSocket();
+        });
+    </script>
+</body>
+</html> 

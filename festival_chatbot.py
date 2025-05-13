@@ -137,8 +137,7 @@ Here's how you can interact with me:
 
 1. Ask about festivals:
    • "Tell me about Diwali"
-   • "What festivals are in January?"
-   • "What festivals are celebrated in Kerala?"
+
 
 2. Ask about traditional attire:
    • "What to wear for Holi?"
@@ -256,8 +255,7 @@ I'm not sure I understand. You can:
 
 1. Ask about festivals:
    • "Tell me about Diwali"
-   • "What festivals are in January?"
-   • "What festivals are in Kerala?"
+
 
 2. Ask about traditional attire:
    • "What is a saree?"
